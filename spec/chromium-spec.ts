@@ -2894,30 +2894,36 @@ describe('iframe using HTML fullscreen API while window is OS-fullscreened', () 
   });
 
   ifit(process.platform === 'darwin')('can fullscreen from out-of-process iframes (macOS)', async () => {
+    console.log('waiting enter-full-screen');
     await once(w, 'enter-full-screen');
+    console.log('Done waiting enter-full-screen');
     const fullscreenChange = once(ipcMain, 'fullscreenChange');
     const html =
       `<iframe style="width: 0" frameborder=0 src="${crossSiteUrl}" allowfullscreen></iframe>`;
     w.loadURL(`data:text/html,${html}`);
+    console.log('Waiting fullscreenChange');
     await fullscreenChange;
 
     const fullscreenWidth = await w.webContents.executeJavaScript(
       "document.querySelector('iframe').offsetWidth"
     );
     expect(fullscreenWidth > 0).to.be.true();
-
+    console.log('Waiting exitFullscreen');
     await w.webContents.executeJavaScript(
       "document.querySelector('iframe').contentWindow.postMessage('exitFullscreen', '*')"
     );
+    console.log('Waiting leave-html-full-screen');
     await once(w.webContents, 'leave-html-full-screen');
-
+    console.log('done Waiting leave-html-full-screen');
     const width = await w.webContents.executeJavaScript(
       "document.querySelector('iframe').offsetWidth"
     );
     expect(width).to.equal(0);
 
     w.setFullScreen(false);
+    console.log('Waiting leave-full-screen');
     await once(w, 'leave-full-screen');
+    console.log('Done Waiting leave-full-screen');
   });
 
   // TODO(jkleinsc) fix this flaky test on WOA

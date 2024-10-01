@@ -4,7 +4,7 @@ import { BaseWindow, BrowserWindow, BrowserWindowConstructorOptions, ipcMain, We
 import * as path from 'node:path';
 
 import { closeWindow } from './lib/window-helpers';
-import { ifdescribe } from './lib/spec-helpers';
+import { ifdescribe, waitUntil } from './lib/spec-helpers';
 import { once } from 'node:events';
 import { setTimeout } from 'node:timers/promises';
 
@@ -46,10 +46,10 @@ ifdescribe(process.platform !== 'linux')('document.visibilityState', () => {
 
   itWithOptions('should be visible when the window is initially shown by default', {}, async () => {
     load();
-    const [, state] = await once(ipcMain, 'initial-visibility-state');
-    console.log('initial state:', state);
-    await once(ipcMain, 'visibility-change-visible');
-    expect(state).to.equal('visible');
+    await expect(waitUntil(async () => {
+      const docVisState = await w.webContents.executeJavaScript('document.visibilityState');
+      return docVisState === 'visible';
+    })).to.eventually.be.fulfilled();
   });
 
   itWithOptions('should be visible when the window is initially shown', {

@@ -47,6 +47,8 @@ ifdescribe(process.platform !== 'linux')('document.visibilityState', () => {
   itWithOptions('should be visible when the window is initially shown by default', {}, async () => {
     load();
     const [, state] = await once(ipcMain, 'initial-visibility-state');
+    console.log('initial state:', state);
+    await once(ipcMain, 'visibility-change-visible');
     expect(state).to.equal('visible');
   });
 
